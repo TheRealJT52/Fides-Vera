@@ -64,10 +64,20 @@ export class GroqService {
 
   constructor() {
     const apiKey = process.env.GROQ_API_KEY;
+    
+    // In GitHub environments, we want to warn but not crash if the API key isn't set
+    // This allows running tests and other operations without the actual API key
     if (!apiKey) {
-      throw new Error("GROQ_API_KEY environment variable is not set");
+      console.warn("WARNING: GROQ_API_KEY environment variable is not set.");
+      console.warn("The application may not function correctly without a valid API key.");
+      console.warn("Please add your GROQ_API_KEY to your environment variables or .env file.");
+      
+      // Use a placeholder value in development mode to allow the app to start
+      // This will obviously not work for real API calls
+      this.apiKey = process.env.NODE_ENV === 'development' ? 'development_placeholder_key' : '';
+    } else {
+      this.apiKey = apiKey;
     }
-    this.apiKey = apiKey;
     
     // Log cache status every hour to monitor usage
     setInterval(() => {
@@ -83,7 +93,18 @@ export class GroqService {
     temperature: number = 0.5,
     max_tokens: number = 2048
   ): Promise<string> {
+    // Check if we're in development with no API key (GitHub environment without secrets)
+    if (this.apiKey === 'development_placeholder_key') {
+      console.warn("Using mock response due to missing GROQ_API_KEY");
+      return "This is a placeholder response. To get real responses, please set up your GROQ_API_KEY in your environment variables or .env file.";
+    }
+    
     const url = `${this.baseUrl}/chat/completions`;
+    
+    // Check for empty API key
+    if (!this.apiKey) {
+      throw new Error("Cannot make API call: GROQ_API_KEY is not set");
+    }
     
     // Filter out 'sources' property from messages to prevent Groq API errors
     const cleanedMessages = messages.map(msg => ({
@@ -118,6 +139,12 @@ export class GroqService {
       return data.choices[0].message.content;
     } catch (error) {
       console.error("Error calling Groq API:", error);
+      
+      // More helpful error message for GitHub environments
+      if (process.env.NODE_ENV === 'development' && !process.env.GROQ_API_KEY) {
+        throw new Error("Groq API key not configured. Please add GROQ_API_KEY to your environment variables or .env file.");
+      }
+      
       throw error;
     }
   }
@@ -126,6 +153,18 @@ export class GroqService {
    * Get text embeddings from Groq API
    */
   async getEmbedding(text: string): Promise<number[]> {
+    // Check if we're in development with no API key (GitHub environment without secrets)
+    if (this.apiKey === 'development_placeholder_key') {
+      console.warn("Using mock embeddings due to missing GROQ_API_KEY");
+      // Return a small random vector for development purposes
+      return Array(10).fill(0).map(() => Math.random());
+    }
+    
+    // Check for empty API key
+    if (!this.apiKey) {
+      throw new Error("Cannot make API call: GROQ_API_KEY is not set");
+    }
+    
     const url = `${this.baseUrl}/embeddings`;
     
     const params: GroqEmbeddingParams = {
@@ -152,6 +191,12 @@ export class GroqService {
       return data.data[0].embedding;
     } catch (error) {
       console.error("Error getting embeddings from Groq API:", error);
+      
+      // More helpful error message for GitHub environments
+      if (process.env.NODE_ENV === 'development' && !process.env.GROQ_API_KEY) {
+        throw new Error("Groq API key not configured. Please add GROQ_API_KEY to your environment variables or .env file.");
+      }
+      
       throw error;
     }
   }

@@ -1,0 +1,60 @@
+name: Fides Vera CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Type check
+      run: npm run check
+      
+    - name: Build
+      run: npm run build
+      env:
+        # This allows the build to proceed without the API key
+        NODE_ENV: development
+        
+  # This job is for deployment when ready
+  # Uncomment and configure when you want to deploy
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   
+  #   - name: Set up Node.js
+  #     uses: actions/setup-node@v3
+  #     with:
+  #       node-version: '20'
+  #       cache: 'npm'
+  #       
+  #   - name: Install dependencies
+  #     run: npm ci
+  #       
+  #   - name: Build
+  #     run: npm run build
+  #     env:
+  #       NODE_ENV: production
+  #       # Add other environment variables as needed
+  #       
+  #   # Add your deployment steps here
+  #   # For example, deploying to a cloud service
