@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
@@ -168,13 +168,88 @@ export function useChat(chatId?: number) {
     setCurrentChatId(id);
   }, []);
 
+  // Keep local messages state for immediate display
+  const [localMessages, setLocalMessages] = useState<Message[]>([]);
+  
+  // Update local messages when server data changes
+  useEffect(() => {
+    if (chatQuery.data && (chatQuery.data as any).messages) {
+      setLocalMessages((chatQuery.data as any).messages);
+    }
+  }, [chatQuery.data]);
+  
+  // Override handleSendMessage to update local messages immediately
+  const handleSendMessageWithLocalUpdate = useCallback(
+    (message: string) => {
+      // User message
+      const userMessage: Message = {
+        id: Date.now(),
+        chatId: currentChatId || 0,
+        role: "user",
+        content: message,
+        createdAt: new Date()
+      };
+      
+      // Add user message immediately
+      setLocalMessages(prev => [...prev, userMessage]);
+      
+      // Show loading state
+      setIsProcessing(true);
+      
+      // Send to server
+      if (!currentChatId) {
+        createChatMutation.mutate({ message }, {
+          onSuccess: (data) => {
+            // Add AI response when it comes back
+            const aiMessage: Message = {
+              id: Date.now() + 1,
+              chatId: data.chatId,
+              role: "assistant",
+              content: data.message.content,
+              sources: data.message.sources,
+              createdAt: new Date()
+            };
+            setLocalMessages(prev => [...prev, aiMessage]);
+            setIsProcessing(false);
+          },
+          onError: () => {
+            setIsProcessing(false);
+          }
+        });
+      } else {
+        sendMessageMutation.mutate({ chatId: currentChatId, message }, {
+          onSuccess: (response) => {
+            // Add AI response when it comes back
+            const aiMessage: Message = {
+              id: Date.now() + 1,
+              chatId: currentChatId,
+              role: "assistant", 
+              content: response.content,
+              sources: response.sources,
+              createdAt: new Date()
+            };
+            setLocalMessages(prev => [...prev, aiMessage]);
+            setIsProcessing(false);
+          },
+          onError: () => {
+            setIsProcessing(false);
+          }
+        });
+      }
+    },
+    [currentChatId, sendMessageMutation, createChatMutation]
+  );
+  
   return {
     chats: chatsQuery.data as Chat[] | undefined,
-    currentChat: chatQuery.data as any,
+    currentChat: { 
+      ...(chatQuery.data as any), 
+      messages: localMessages 
+    },
     isLoadingChats: chatsQuery.isLoading,
     isLoadingCurrentChat: chatQuery.isLoading,
     isProcessing,
-    sendMessage: handleSendMessage,
+    sendMessage: handleSendMessageWithLocalUpdate,
     newChat: handleNewChat,
     selectChat: handleSelectChat,
     currentChatId,

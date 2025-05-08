@@ -68,7 +68,7 @@ export default function Chat() {
         />
         
         <main className="flex-1 flex flex-col bg-[#F8F5E6] overflow-hidden">
-          <ScrollArea className="flex-1 px-4 py-6 max-h-[calc(100vh-120px)]">
+          <div className="flex-1 px-4 py-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 140px)' }}>
             <div className="max-w-4xl mx-auto space-y-4">
               {isLoadingCurrentChat ? (
                 <div className="flex items-center justify-center h-32">
@@ -101,7 +101,7 @@ export default function Chat() {
               )}
               <div ref={messagesEndRef} />
             </div>
-          </ScrollArea>
+          </div>
           
           <ChatInput 
             onSendMessage={sendMessage} 
