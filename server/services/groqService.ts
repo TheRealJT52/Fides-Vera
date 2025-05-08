@@ -53,6 +53,14 @@ export class GroqService {
   private chatModel: string = "llama3-70b-8192";
   private embeddingModel: string = "text-embedding-ada-002";
   private baseUrl: string = "https://api.groq.com/openai/v1";
+  
+  // Simple cache to avoid redundant API calls
+  private completionCache: Map<string, string> = new Map();
+  private embeddingCache: Map<string, number[]> = new Map();
+  
+  // Cache size limits 
+  private readonly MAX_COMPLETION_CACHE_SIZE = 100;
+  private readonly MAX_EMBEDDING_CACHE_SIZE = 500;
 
   constructor() {
     const apiKey = process.env.GROQ_API_KEY;
@@ -60,6 +68,11 @@ export class GroqService {
       throw new Error("GROQ_API_KEY environment variable is not set");
     }
     this.apiKey = apiKey;
+    
+    // Log cache status every hour to monitor usage
+    setInterval(() => {
+      console.log(`[GroqService] Cache status - Completions: ${this.completionCache.size}/${this.MAX_COMPLETION_CACHE_SIZE}, Embeddings: ${this.embeddingCache.size}/${this.MAX_EMBEDDING_CACHE_SIZE}`);
+    }, 60 * 60 * 1000);
   }
 
   /**

@@ -58,6 +58,43 @@ export class MemStorage implements IStorage {
     
     // Initialize with some default documents
     this.initializeDocuments();
+    
+    // Set up periodic cleanup of old messages to prevent memory growth
+    // This is crucial for keeping memory usage down in auto-scale deployment
+    setInterval(() => this.cleanupOldMessages(), 3600000); // Run every hour
+  }
+  
+  // Clean up old messages to prevent memory bloat
+  private cleanupOldMessages(): void {
+    const now = new Date();
+    const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+    const MAX_MESSAGES_PER_CHAT = 20; // Maximum messages to keep per chat
+    
+    // Group messages by chat
+    const messagesByChat = new Map<number, Message[]>();
+    
+    // Collect and group messages
+    for (const message of this.messages.values()) {
+      if (!messagesByChat.has(message.chatId)) {
+        messagesByChat.set(message.chatId, []);
+      }
+      messagesByChat.get(message.chatId)?.push(message);
+    }
+    
+    // For each chat, remove older messages beyond our limit
+    for (const [chatId, messages] of messagesByChat.entries()) {
+      // Sort messages by creation time (newest first)
+      messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      
+      // Keep only the most recent messages per chat
+      const toKeep = messages.slice(0, MAX_MESSAGES_PER_CHAT);
+      const toDelete = messages.slice(MAX_MESSAGES_PER_CHAT);
+      
+      // Delete older messages
+      for (const message of toDelete) {
+        this.messages.delete(message.id);
+      }
+    }
   }
 
   // User methods
@@ -125,11 +162,13 @@ export class MemStorage implements IStorage {
   }
 
   async getMessagesByChatId(chatId: number): Promise<Message[]> {
+    // Only return the most recent messages to reduce memory usage in production
     return Array.from(this.messages.values())
       .filter((message) => message.chatId === chatId)
       .sort((a, b) => {
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      });
+      })
+      .slice(-5); // Only keep the 5 most recent messages
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {

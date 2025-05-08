@@ -69,20 +69,31 @@ when appropriate.
       // Search for relevant documents using keyword search
       const relevantSources = vectorStore.searchByKeywords(query, 3);
       
-      // Prepare context with relevant documents
+      // Prepare context with relevant documents - truncate content if too long
+      // to reduce token usage when sending to the LLM
       const contextStr = relevantSources
-        .map(doc => `Document: ${doc.title}\nContent: ${doc.content}\nSource: ${doc.source}\n`)
+        .map(doc => {
+          // Limit content length to reduce token usage (approx 1000 chars)
+          const truncatedContent = doc.content.length > 1000 
+            ? doc.content.substring(0, 1000) + "..." 
+            : doc.content;
+          return `Document: ${doc.title}\nContent: ${truncatedContent}\nSource: ${doc.source}\n`;
+        })
         .join("\n");
+      
+      // Limit conversation history to recent messages to reduce token usage
+      // Only include the last 5 messages
+      const limitedHistory = conversationHistory.slice(-5);
       
       // Prepare messages for LLM
       const messages: MessageWithRole[] = [
         { role: "system", content: this.systemPrompt + "\n\nRelevant context:\n" + contextStr },
-        ...conversationHistory,
+        ...limitedHistory,
         { role: "user", content: query }
       ];
       
       // Get response from Groq
-      const response = await groqService.getChatCompletion(messages);
+      const response = await groqService.getChatCompletion(messages, 0.5, 1500);
       
       // Save the user message and response to storage
       await storage.createMessage({
