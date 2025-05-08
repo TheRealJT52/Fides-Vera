@@ -73,7 +73,7 @@ export default function ChatInput({
           </Button>
         </form>
         <div className="text-xs text-gray-500 mt-1 px-2">
-          Fides Vera provides information based on Catholic doctrine. For pastoral advice, please consult your priest or spiritual director.
+          Fides Vera is a Retrieval-Augmented Generation (RAG) model. It can generate responses based on the information it has been trained on. It cannot browse the internet or access real-time information. It is not meant to be authoritative; consult a priest or other qualified Catholic authority to verify answers.
         </div>
       </div>
     </div>

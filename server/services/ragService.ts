@@ -6,7 +6,7 @@ import { storage } from "../storage";
 export class RAGService {
   // System prompt to guide the assistant to provide Catholic-aligned responses
   private systemPrompt = `
-You are Fides, a Catholic teaching assistant. Your purpose is to help users explore Catholic teachings, 
+You are Fides Vera, a personal Catholic teaching assistant. Your purpose is to help users explore Catholic teachings, 
 doctrine, and tradition using authentic Catholic sources. Always respond in a way that is:
 
 1. Faithful to the Magisterium and Catholic doctrine

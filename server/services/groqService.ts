@@ -72,8 +72,15 @@ export class GroqService {
   ): Promise<string> {
     const url = `${this.baseUrl}/chat/completions`;
     
+    // Filter out 'sources' property from messages to prevent Groq API errors
+    const cleanedMessages = messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+      // Exclude 'sources' property as Groq API doesn't accept it
+    }));
+    
     const params: GroqChatCompletionParams = {
-      messages,
+      messages: cleanedMessages,
       model: this.chatModel,
       temperature,
       max_tokens,
