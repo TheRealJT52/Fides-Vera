@@ -73,7 +73,7 @@ export default function ChatInput({
           </Button>
         </form>
         <div className="text-xs text-gray-500 mt-1 px-2">
-          Fides provides information based on Catholic doctrine. For pastoral advice, please consult your priest or spiritual director.
+          Fides Vera provides information based on Catholic doctrine. For pastoral advice, please consult your priest or spiritual director.
         </div>
       </div>
     </div>
