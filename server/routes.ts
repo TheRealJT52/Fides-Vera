@@ -55,22 +55,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all chats (optionally filtered by userId)
+  // Get all chats (optionally filtered by userId) - with memory optimization
   app.get("/api/chats", async (req: Request, res: Response) => {
     try {
       const userId = req.query.userId ? Number(req.query.userId) : undefined;
       
       if (userId) {
+        // For a specific user, get their chats directly 
         const chats = await storage.getChatsByUserId(userId);
         return res.json(chats);
       } else {
-        // For demo purposes, get all chats since we don't have auth
-        const allChats = [];
-        for (let i = 1; i <= 10; i++) {
-          const chats = await storage.getChatsByUserId(i);
-          allChats.push(...chats);
-        }
-        return res.json(allChats);
+        // For demo purposes, get all chats but limit the number
+        // This is more memory efficient for auto-scaling
+        const userId = 1; // Default user
+        const chats = await storage.getChatsByUserId(userId);
+        
+        // Only return the 10 most recent chats to save memory
+        const recentChats = chats
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 10);
+          
+        return res.json(recentChats);
       }
     } catch (error) {
       console.error("Error fetching chats:", error);
@@ -176,12 +181,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get conversation history
+      // Get minimal conversation history (only the most recent few messages)
+      // The storage layer already limits to the 5 most recent messages
       const previousMessages = await storage.getMessagesByChatId(chatId);
       const conversationHistory: z.infer<typeof messageWithRole>[] = previousMessages.map(msg => ({
         role: msg.role as any,
         content: msg.content,
-        sources: msg.sources as any
+        // Don't send source objects to save memory - these aren't used in the prompt anyway
+        sources: undefined
       }));
       
       // Process the query through the RAG service

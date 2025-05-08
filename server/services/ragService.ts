@@ -74,9 +74,10 @@ when appropriate.
       const contextStr = relevantSources
         .map(doc => {
           // Limit content length to reduce token usage (approx 1000 chars)
-          const truncatedContent = doc.content.length > 1000 
-            ? doc.content.substring(0, 1000) + "..." 
-            : doc.content;
+          const content = doc.content || '';
+          const truncatedContent = content.length > 1000 
+            ? content.substring(0, 1000) + "..." 
+            : content;
           return `Document: ${doc.title}\nContent: ${truncatedContent}\nSource: ${doc.source}\n`;
         })
         .join("\n");

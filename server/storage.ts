@@ -44,6 +44,10 @@ export class MemStorage implements IStorage {
     documents: number;
   };
 
+  // Constants for memory optimization
+  private readonly MAX_CHATS_PER_USER = 25;
+  private readonly MAX_MESSAGES_TOTAL = 500;
+  
   constructor() {
     this.users = new Map();
     this.chats = new Map();
@@ -59,42 +63,115 @@ export class MemStorage implements IStorage {
     // Initialize with some default documents
     this.initializeDocuments();
     
-    // Set up periodic cleanup of old messages to prevent memory growth
+    // Set up more frequent cleanup to keep memory usage low
     // This is crucial for keeping memory usage down in auto-scale deployment
-    setInterval(() => this.cleanupOldMessages(), 3600000); // Run every hour
+    setInterval(() => this.cleanupOldData(), 900000); // Run every 15 minutes
+    
+    // Log memory stats every hour
+    setInterval(() => {
+      console.log(`[MemStorage] Stats: Users=${this.users.size}, Chats=${this.chats.size}, Messages=${this.messages.size}, Documents=${this.documents.size}`);
+    }, 3600000);
+  }
+  
+  // Clean up old data to prevent memory bloat - both messages and chats
+  private cleanupOldData(): void {
+    this.cleanupOldMessages();
+    this.cleanupOldChats();
+    
+    // If we still have too many messages total, delete the oldest ones
+    if (this.messages.size > this.MAX_MESSAGES_TOTAL) {
+      const allMessages = Array.from(this.messages.values());
+      
+      // Sort by creation time (oldest first)
+      allMessages.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      
+      // Delete oldest messages to get down to our limit
+      const toDelete = allMessages.slice(0, allMessages.length - this.MAX_MESSAGES_TOTAL);
+      
+      for (const message of toDelete) {
+        this.messages.delete(message.id);
+      }
+      
+      console.log(`[MemStorage] Deleted ${toDelete.length} oldest messages to stay under memory limit`);
+    }
   }
   
   // Clean up old messages to prevent memory bloat
   private cleanupOldMessages(): void {
-    const now = new Date();
-    const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
     const MAX_MESSAGES_PER_CHAT = 20; // Maximum messages to keep per chat
     
+    // Messages by chat, using regular array operations to avoid TypeScript errors
+    const chatsMap = new Map<number, Message[]>();
+    const messageArray = Array.from(this.messages.values());
+    
     // Group messages by chat
-    const messagesByChat = new Map<number, Message[]>();
-    
-    // Collect and group messages
-    for (const message of this.messages.values()) {
-      if (!messagesByChat.has(message.chatId)) {
-        messagesByChat.set(message.chatId, []);
+    messageArray.forEach(message => {
+      if (!chatsMap.has(message.chatId)) {
+        chatsMap.set(message.chatId, []);
       }
-      messagesByChat.get(message.chatId)?.push(message);
-    }
+      const chatMessages = chatsMap.get(message.chatId);
+      if (chatMessages) {
+        chatMessages.push(message);
+      }
+    });
     
-    // For each chat, remove older messages beyond our limit
-    for (const [chatId, messages] of messagesByChat.entries()) {
+    // Process each chat's messages
+    chatsMap.forEach((messages, chatId) => {
+      if (messages.length <= MAX_MESSAGES_PER_CHAT) return;
+      
       // Sort messages by creation time (newest first)
       messages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
       
       // Keep only the most recent messages per chat
-      const toKeep = messages.slice(0, MAX_MESSAGES_PER_CHAT);
       const toDelete = messages.slice(MAX_MESSAGES_PER_CHAT);
       
       // Delete older messages
       for (const message of toDelete) {
         this.messages.delete(message.id);
       }
-    }
+    });
+  }
+  
+  // Clean up old chats to prevent memory bloat
+  private cleanupOldChats(): void {
+    // Get chats by user
+    const userChats = new Map<number, Chat[]>();
+    
+    Array.from(this.chats.values()).forEach(chat => {
+      const userId = chat.userId || 1; // Default to user 1 if undefined
+      if (!userChats.has(userId)) {
+        userChats.set(userId, []);
+      }
+      const chats = userChats.get(userId);
+      if (chats) {
+        chats.push(chat);
+      }
+    });
+    
+    // For each user, limit the number of chats
+    userChats.forEach((chats, userId) => {
+      if (chats.length <= this.MAX_CHATS_PER_USER) return;
+      
+      // Sort chats by date (newest first)
+      chats.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      
+      // Delete older chats beyond the limit
+      const toDelete = chats.slice(this.MAX_CHATS_PER_USER);
+      
+      for (const chat of toDelete) {
+        // Delete all messages for this chat first
+        Array.from(this.messages.values()).forEach(msg => {
+          if (msg.chatId === chat.id) {
+            this.messages.delete(msg.id);
+          }
+        });
+        
+        // Delete the chat
+        this.chats.delete(chat.id);
+      }
+      
+      console.log(`[MemStorage] Deleted ${toDelete.length} old chats for user ${userId}`);
+    });
   }
 
   // User methods
