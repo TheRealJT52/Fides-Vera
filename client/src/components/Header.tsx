@@ -11,8 +11,8 @@ export default function Header({ onNewChat, toggleSidebar }: HeaderProps) {
       <div className="container mx-auto px-4 py-3 flex justify-center items-center">
         <div className="flex items-center space-x-2">
           <GalleryVerticalEnd className="text-[#FFC107]" size={24} />
-          <h1 className="font-['Cinzel'] text-2xl font-bold">Fides</h1>
-          <span className="text-sm ml-2 text-gray-200">Catholic Teaching Assistant</span>
+          <h1 className="font-['Cinzel'] text-2xl font-bold">Fides Vera</h1>
+          <span className="text-sm ml-2 text-gray-200">Your Personal Catholic Teaching Assistant</span>
         </div>
       </div>
     </header>

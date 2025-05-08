@@ -47,7 +47,7 @@ export default function Chat() {
     id: 0,
     chatId: 0,
     role: 'assistant' as const,
-    content: "Welcome to Fides, your Catholic teaching assistant. I'm here to help you explore Catholic teachings, doctrine, and tradition using authentic Catholic sources. How may I assist you today?",
+    content: "Welcome to Fides Vera, your personal Catholic teaching assistant. I'm here to help you explore Catholic teachings, doctrine, and tradition using authentic Catholic sources. How may I assist you today?",
     createdAt: new Date()
   });
 
