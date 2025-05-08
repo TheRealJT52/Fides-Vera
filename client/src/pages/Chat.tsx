@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { systemPrompt } from '@/data/catholicTexts';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Message } from '@/lib/types';
 
 export default function Chat() {
   const params = useParams();
@@ -81,7 +82,7 @@ export default function Chat() {
                   )}
                   
                   {/* Conversation messages */}
-                  {messagesToShow.map((message) => (
+                  {messagesToShow.map((message: Message) => (
                     <ChatMessage key={message.id} message={message} />
                   ))}
                   
@@ -109,7 +110,7 @@ export default function Chat() {
         </main>
         
         <SourcePanel 
-          sources={currentChat?.messages?.find(m => m.role === 'assistant')?.sources}
+          sources={currentChat?.messages?.find((m: Message) => m.role === 'assistant')?.sources}
           isVisible={!isMobile}
         />
       </div>
