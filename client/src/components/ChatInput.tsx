@@ -73,7 +73,7 @@ export default function ChatInput({
           </Button>
         </form>
         <div className="text-xs text-gray-500 mt-1 px-2">
-          Fides Vera is a Retrieval-Augmented Generation (RAG) model. It can generate responses based on the information it has been trained on. It cannot browse the internet or access real-time information. It is not meant to be authoritative; consult a priest or other qualified Catholic authority to verify answers.
+          Hi! I'm Fide, a Retrieval-Augmented Generation (RAG) Large Language Model (LLM). I can generate responses based on the information I have been trained on. I cannot browse the internet or access real-time information. My answers are not meant to be authoritative; please consult a priest or other qualified Catholic authority to verify answers.
         </div>
       </div>
     </div>
