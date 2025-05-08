@@ -42,7 +42,38 @@ export function useChat(chatId?: number) {
       setIsProcessing(false);
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (responseMessage, variables) => {
+      // Immediately update the chat with both user message and response
+      queryClient.setQueryData(["/api/chats", variables.chatId], (oldData: any) => {
+        if (!oldData) return oldData;
+        
+        const now = new Date();
+        const newMessages = [
+          ...(oldData.messages || []),
+          {
+            id: oldData.messages?.length + 1 || 1,
+            chatId: variables.chatId,
+            role: "user",
+            content: variables.message,
+            createdAt: now
+          },
+          {
+            id: oldData.messages?.length + 2 || 2,
+            chatId: variables.chatId,
+            role: "assistant",
+            content: responseMessage.content,
+            sources: responseMessage.sources,
+            createdAt: now
+          }
+        ];
+        
+        return {
+          ...oldData,
+          messages: newMessages
+        };
+      });
+      
+      // Also refresh the data
       queryClient.invalidateQueries({ queryKey: ["/api/chats", currentChatId] });
     },
     onError: (error) => {
@@ -63,8 +94,43 @@ export function useChat(chatId?: number) {
       setIsProcessing(false);
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       setCurrentChatId(data.chatId);
+      
+      // Manually update cache to immediately show the assistant's message
+      queryClient.setQueryData(["/api/chats", data.chatId], (oldData: any) => {
+        // If there's no existing data, create a new chat object
+        if (!oldData) {
+          const now = new Date();
+          return {
+            id: data.chatId,
+            title: "New Chat",
+            createdAt: now,
+            messages: [
+              {
+                id: 0,
+                chatId: data.chatId,
+                role: "user",
+                content: variables.message,
+                createdAt: now
+              },
+              {
+                id: 1,
+                chatId: data.chatId,
+                role: "assistant",
+                content: data.message.content,
+                sources: data.message.sources,
+                createdAt: now
+              }
+            ]
+          };
+        }
+        
+        // Otherwise add to existing chat
+        return oldData;
+      });
+      
+      // Then invalidate queries to fetch fresh data
       queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/chats", data.chatId] });
     },
