@@ -17,7 +17,7 @@ export default function Chat() {
   const params = useParams();
   const chatId = params.id ? parseInt(params.id) : undefined;
   const isMobile = useIsMobile();
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { 
@@ -32,10 +32,10 @@ export default function Chat() {
     selectChat
   } = useChat(chatId);
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [currentChat?.messages]);
+  // Scroll to bottom when messages change - disable automatic scrolling
+  // useEffect(() => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // }, [currentChat?.messages]);
 
   // Toggle sidebar visibility
   const toggleSidebar = () => {
@@ -68,8 +68,8 @@ export default function Chat() {
         />
         
         <main className="flex-1 flex flex-col bg-[#F8F5E6] overflow-hidden">
-          <ScrollArea className="flex-1 px-4 py-6">
-            <div className="max-w-4xl mx-auto space-y-6">
+          <ScrollArea className="flex-1 px-4 py-6 max-h-[calc(100vh-120px)]">
+            <div className="max-w-4xl mx-auto space-y-4">
               {isLoadingCurrentChat ? (
                 <div className="flex items-center justify-center h-32">
                   <div className="text-sm text-gray-500">Loading conversation...</div>
@@ -111,7 +111,7 @@ export default function Chat() {
         
         <SourcePanel 
           sources={currentChat?.messages?.find((m: Message) => m.role === 'assistant')?.sources}
-          isVisible={!isMobile}
+          isVisible={false}
         />
       </div>
     </div>

@@ -7,15 +7,15 @@ interface SourceCitationProps {
 
 export default function SourceCitation({ source }: SourceCitationProps) {
   return (
-    <div className="citation bg-gray-50 rounded p-3 my-3 text-sm border-l-2 border-[#4A2C82]">
-      <p className="font-medium text-[#4A2C82]">From {source.title}:</p>
+    <div className="citation bg-gray-50 rounded p-2 my-2 text-sm border-l-2 border-[#4A2C82]">
+      <p className="font-medium text-[#4A2C82] text-xs">From {source.title}:</p>
       
       {source.content && (
-        <p className="italic my-1">{source.content}</p>
+        <p className="italic my-1 text-xs">{source.content}</p>
       )}
       
       <div className="text-xs text-gray-600 flex items-center mt-1">
-        <BookText className="text-[#C41E3A] mr-1" size={14} />
+        <BookText className="text-[#C41E3A] mr-1" size={12} />
         {source.source}{source.section ? `, ${source.section}` : ''}
       </div>
     </div>

@@ -25,7 +25,7 @@ export default function ChatMessage({ message, className }: ChatMessageProps) {
   // Format content with citations
   // This is a simple approach; for more complex formatting, consider using a markdown parser
   const formattedContent = message.content.split('\n').map((line, i) => (
-    <p key={i} className={cn("text-gray-800", i !== 0 && "mt-3")}>{line}</p>
+    <p key={i} className={cn("text-gray-800", i !== 0 && "mt-2")}>{line}</p>
   ));
   
   return (
