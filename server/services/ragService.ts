@@ -44,17 +44,16 @@ when appropriate.
     try {
       const documents = await storage.getDocuments();
       
+      // Store documents without embeddings for keyword search fallback
       for (const document of documents) {
-        // Get embedding for the document content
-        const embedding = await groqService.getEmbedding(document.content);
-        
-        // Add the document and its embedding to the vector store
-        vectorStore.addDocumentVector(document, embedding);
+        // Add the document to the vector store without embeddings
+        // We'll use a fallback search method when embeddings aren't available
+        vectorStore.addDocumentWithoutEmbedding(document);
       }
       
-      console.log(`Vector store initialized with ${documents.length} documents`);
+      console.log(`Document store initialized with ${documents.length} documents`);
     } catch (error) {
-      console.error("Failed to initialize vector store:", error);
+      console.error("Failed to initialize document store:", error);
     }
   }
 
@@ -67,11 +66,8 @@ when appropriate.
     conversationHistory: MessageWithRole[] = []
   ): Promise<{ content: string; sources: SourceReference[] }> {
     try {
-      // Get embedding for the user query
-      const queryEmbedding = await groqService.getEmbedding(query);
-      
-      // Search for relevant documents
-      const relevantSources = vectorStore.searchSimilarDocuments(queryEmbedding, 3);
+      // Search for relevant documents using keyword search
+      const relevantSources = vectorStore.searchByKeywords(query, 3);
       
       // Prepare context with relevant documents
       const contextStr = relevantSources

@@ -7,17 +7,27 @@ interface DocumentVector {
 }
 
 /**
- * A simple in-memory vector store for document embeddings
+ * A simple in-memory store for documents and their vectors
  * In a production environment, this would be replaced with a proper vector DB
  */
 export class VectorStore {
   private documentVectors: DocumentVector[] = [];
+  private documents: Document[] = []; // Store documents without embeddings
 
   /**
    * Add a document with its embedding vector to the store
    */
   addDocumentVector(document: Document, vector: number[]): void {
     this.documentVectors.push({ document, vector });
+    // Also add to regular document store for keyword search
+    this.documents.push(document);
+  }
+
+  /**
+   * Add a document without embedding for keyword search
+   */
+  addDocumentWithoutEmbedding(document: Document): void {
+    this.documents.push(document);
   }
 
   /**
@@ -49,6 +59,11 @@ export class VectorStore {
    * Search for the most similar documents to the given query vector
    */
   searchSimilarDocuments(queryVector: number[], limit: number = 5): SourceReference[] {
+    // If no document vectors available, fall back to keyword search
+    if (this.documentVectors.length === 0) {
+      return this.searchByKeywords("", limit);
+    }
+
     const results = this.documentVectors.map(({ document, vector }) => {
       const score = this.cosineSimilarity(queryVector, vector);
       return {
@@ -68,10 +83,61 @@ export class VectorStore {
   }
 
   /**
+   * Search for documents containing keywords from the query
+   * A simple alternative when vector embeddings aren't available
+   */
+  searchByKeywords(query: string, limit: number = 5): SourceReference[] {
+    // If query is empty, return random documents
+    if (!query.trim()) {
+      return this.documents.slice(0, limit).map(doc => ({
+        id: doc.id,
+        title: doc.title,
+        content: doc.content,
+        source: doc.source,
+        category: doc.category,
+        relevanceScore: 1.0, // Default high score
+      }));
+    }
+
+    // Split query into keywords
+    const keywords = query.toLowerCase().split(/\s+/);
+    
+    // Score documents based on keyword matches
+    const results = this.documents.map(document => {
+      const documentText = `${document.title} ${document.content}`.toLowerCase();
+      
+      // Count keyword matches
+      let matchCount = 0;
+      for (const keyword of keywords) {
+        if (keyword.length > 2 && documentText.includes(keyword)) {
+          matchCount++;
+        }
+      }
+      
+      // Calculate score based on match percentage
+      const score = keywords.length > 0 ? matchCount / keywords.length : 0;
+      
+      return {
+        id: document.id,
+        title: document.title,
+        content: document.content,
+        source: document.source,
+        category: document.category, 
+        relevanceScore: score
+      };
+    });
+
+    // Sort by score and take top results
+    return results
+      .sort((a, b) => b.relevanceScore! - a.relevanceScore!)
+      .slice(0, limit);
+  }
+
+  /**
    * Get all documents in the store
    */
   getAllDocuments(): Document[] {
-    return this.documentVectors.map(({ document }) => document);
+    return this.documents;
   }
 }
 
