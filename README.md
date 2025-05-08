@@ -31,14 +31,26 @@ A comprehensive Catholic-focused Retrieval-Augmented Generation (RAG) chatbot na
    npm install
    ```
 
-3. Create a `.env` file in the root directory and add your Groq API key:
+3. Run the setup script to create your environment file:
+   ```bash
+   node setup.js
+   ```
+
+4. Open the `.env` file in the root directory and add your Groq API key:
    ```
    GROQ_API_KEY=your_groq_api_key_here
    ```
 
-4. Start the development server:
+5. Start the development server:
+   
+   On macOS/Linux:
    ```bash
    npm run dev
+   ```
+   
+   On Windows (if you're not using Git Bash):
+   ```bash
+   npx cross-env NODE_ENV=development tsx server/index.ts
    ```
 
 5. Open your browser and navigate to `http://localhost:5000`
