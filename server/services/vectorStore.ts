@@ -139,6 +139,13 @@ export class VectorStore {
   getAllDocuments(): Document[] {
     return this.documents;
   }
+  
+  /**
+   * Get a document by its ID
+   */
+  getDocumentById(id: number): Document | undefined {
+    return this.documents.find(doc => doc.id === id);
+  }
 }
 
 // Create a singleton instance

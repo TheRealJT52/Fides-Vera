@@ -346,51 +346,172 @@ export class MemStorage implements IStorage {
 
   // Helper method to initialize documents
   private initializeDocuments() {
-    const catechismDocument = {
-      title: "Catechism of the Catholic Church",
-      content: "The Catechism of the Catholic Church is a comprehensive summary of Catholic faith, morals, and doctrine. It serves as a reference text for teaching Catholic doctrine.",
+    // Create multiple Catechism documents with specific sections
+    const catechismPart1 = {
+      title: "Catechism of the Catholic Church: Part 1 - The Profession of Faith",
+      content: "Part One of the Catechism explores the Profession of Faith, including the Apostles' Creed and the nature of faith. Sections 26-184 cover 'Man's Capacity for God' and 'God Comes to Meet Man'. Sections 185-1065 cover 'The Creeds' including beliefs about the Trinity, Creation, Jesus Christ, and the Holy Spirit.",
       source: "Vatican",
       category: "Catechism",
-      metadata: { year: 1992 }
+      metadata: { 
+        year: 1992,
+        section: "Part One (26-1065)",
+        paragraphs: "26-1065"
+      }
     } as InsertDocument;
     
-    const vaticanIIDocument = {
-      title: "Vatican II Documents",
-      content: "The Second Vatican Council (Vatican II) was an ecumenical council of the Catholic Church convened by Pope John XXIII and closed by Pope Paul VI. Its documents represent a major turning point in the modern Church.",
+    const catechismPart2 = {
+      title: "Catechism of the Catholic Church: Part 2 - The Celebration of the Christian Mystery",
+      content: "Part Two of the Catechism covers the Church's liturgy and the seven sacraments. Sections 1066-1209 explain the meaning and purpose of the liturgy. Sections 1210-1690 detail each of the seven sacraments: Baptism, Confirmation, Eucharist, Penance, Anointing of the Sick, Holy Orders, and Matrimony.",
+      source: "Vatican", 
+      category: "Catechism",
+      metadata: {
+        year: 1992,
+        section: "Part Two (1066-1690)",
+        paragraphs: "1066-1690"
+      }
+    } as InsertDocument;
+    
+    const catechismPart3 = {
+      title: "Catechism of the Catholic Church: Part 3 - Life in Christ",
+      content: "Part Three of the Catechism explores Christian morality and ethical living. Sections 1691-1876 cover man's vocation to life in the Spirit. Sections 1877-2051 explain the Ten Commandments and living in community. Sections 2052-2557 provide detailed explanations of each of the Ten Commandments and their moral implications.",
+      source: "Vatican",
+      category: "Catechism",
+      metadata: {
+        year: 1992,
+        section: "Part Three (1691-2557)",
+        paragraphs: "1691-2557"
+      }
+    } as InsertDocument;
+    
+    const catechismPart4 = {
+      title: "Catechism of the Catholic Church: Part 4 - Christian Prayer",
+      content: "Part Four of the Catechism focuses on prayer in the Christian life. Sections 2558-2649 cover the nature and importance of prayer. Sections 2650-2696 discuss the tradition of prayer in the Church. Sections 2697-2758 explain the life of prayer, including vocal prayer, meditation, and contemplation. Sections 2759-2865 provide a detailed examination of the Lord's Prayer.",
+      source: "Vatican",
+      category: "Catechism",
+      metadata: {
+        year: 1992,
+        section: "Part Four (2558-2865)",
+        paragraphs: "2558-2865"
+      }
+    } as InsertDocument;
+    
+    // Vatican II document split by major constitutions
+    const vaticanIILumenGentium = {
+      title: "Vatican II: Lumen Gentium (Dogmatic Constitution on the Church)",
+      content: "Lumen Gentium, the Dogmatic Constitution on the Church, explains the Church's nature as a sacrament of communion with God and unity among all people. It elaborates on the Church as the People of God, the hierarchical structure, the role of the laity, the universal call to holiness, and Mary's role in the Church.",
       source: "Vatican",
       category: "Council Documents",
-      metadata: { year: "1962-1965" }
+      metadata: { 
+        year: "1964",
+        document: "Lumen Gentium",
+        type: "Dogmatic Constitution"
+      }
     } as InsertDocument;
     
-    const papalEncyclicals = {
-      title: "Papal Encyclicals",
-      content: "Papal encyclicals are letters addressed by the Pope to Catholic bishops throughout the world, typically concerning matters of Catholic doctrine and morals.",
+    const vaticanIIDeiVerbum = {
+      title: "Vatican II: Dei Verbum (Dogmatic Constitution on Divine Revelation)",
+      content: "Dei Verbum, the Dogmatic Constitution on Divine Revelation, addresses the relationship between scripture and tradition, the inspiration and interpretation of scripture, the Old and New Testaments, and scripture's place in the life of the Church.",
       source: "Vatican",
-      category: "Encyclicals",
-      metadata: { type: "official teaching" }
+      category: "Council Documents",
+      metadata: { 
+        year: "1965",
+        document: "Dei Verbum",
+        type: "Dogmatic Constitution"
+      }
     } as InsertDocument;
     
-    const saintsLives = {
-      title: "Lives of the Saints",
-      content: "The lives of Catholic saints serve as models of Christian virtue and examples of faith in action.",
+    // Papal Encyclicals with specific documents
+    const papalDiviniRedemptoris = {
+      title: "Divini Redemptoris (On Atheistic Communism)",
+      content: "Pope Pius XI's 1937 encyclical condemning atheistic communism and explaining Catholic social teaching as the remedy to communism's errors. It offers Christian principles of social order, emphasizing justice, charity, and human dignity.",
+      source: "Pope Pius XI",
+      category: "Encyclicals",
+      metadata: { 
+        year: 1937,
+        pope: "Pius XI",
+        type: "Social Encyclical"
+      }
+    } as InsertDocument;
+    
+    const papalHumanaeVitae = {
+      title: "Humanae Vitae (On Human Life)",
+      content: "Pope Paul VI's 1968 encyclical reaffirming the Church's teaching against artificial contraception. It explains the inseparable connection between the unitive and procreative aspects of marriage, and offers guidance on responsible parenthood and moral regulation of births.",
+      source: "Pope Paul VI",
+      category: "Encyclicals",
+      metadata: { 
+        year: 1968,
+        pope: "Paul VI",
+        type: "Moral Encyclical"
+      }
+    } as InsertDocument;
+    
+    // Saints documents with specific saints
+    const saintAquinas = {
+      title: "Saint Thomas Aquinas",
+      content: "Saint Thomas Aquinas (1225-1274) was a Dominican friar and Doctor of the Church whose works combined faith and reason. His Summa Theologica systematically explains theology through natural reason illuminated by faith. He developed the 'Five Ways' to prove God's existence and advanced Catholic philosophy and theology.",
       source: "Catholic Tradition",
       category: "Saints",
-      metadata: { type: "biographical" }
+      metadata: { 
+        lifespan: "1225-1274",
+        feast: "January 28",
+        title: "Doctor of the Church"
+      }
     } as InsertDocument;
     
-    const scriptureReferences = {
-      title: "Scripture References",
-      content: "The Bible is foundational to Catholic teaching, and Scripture references help to ground Church teaching in the revealed Word of God.",
+    const saintTeresa = {
+      title: "Saint Teresa of Ávila",
+      content: "Saint Teresa of Ávila (1515-1582) was a Spanish Carmelite nun, mystic, and Doctor of the Church. She reformed the Carmelite Order and wrote influential spiritual works including 'The Interior Castle' and her autobiography. Her teachings on prayer and contemplation continue to guide Catholics in developing their spiritual lives.",
+      source: "Catholic Tradition",
+      category: "Saints",
+      metadata: { 
+        lifespan: "1515-1582",
+        feast: "October 15",
+        title: "Doctor of the Church"
+      }
+    } as InsertDocument;
+    
+    // Scripture documents by section
+    const scriptureGospels = {
+      title: "The Gospels",
+      content: "The four Gospels—Matthew, Mark, Luke, and John—present the life, teachings, death, and resurrection of Jesus Christ. They form the heart of Scripture by revealing Jesus as the fulfillment of God's promises and the source of our salvation.",
       source: "Holy Bible",
       category: "Scripture",
-      metadata: { type: "sacred text" }
+      metadata: { 
+        testament: "New Testament",
+        books: "Matthew, Mark, Luke, John",
+        type: "Gospel"
+      }
     } as InsertDocument;
     
-    this.createDocument(catechismDocument);
-    this.createDocument(vaticanIIDocument);
-    this.createDocument(papalEncyclicals);
-    this.createDocument(saintsLives);
-    this.createDocument(scriptureReferences);
+    const scripturePaulineLetters = {
+      title: "Pauline Letters",
+      content: "The letters attributed to Saint Paul address various early Christian communities, covering topics such as faith, salvation, the Church, and Christian moral life. They include Romans, 1 & 2 Corinthians, Galatians, Ephesians, Philippians, Colossians, 1 & 2 Thessalonians, 1 & 2 Timothy, Titus, and Philemon.",
+      source: "Holy Bible",
+      category: "Scripture",
+      metadata: { 
+        testament: "New Testament",
+        author: "Saint Paul",
+        type: "Epistle"
+      }
+    } as InsertDocument;
+    
+    // Create more specific documents with section information
+    this.createDocument(catechismPart1);
+    this.createDocument(catechismPart2);
+    this.createDocument(catechismPart3);
+    this.createDocument(catechismPart4);
+    
+    this.createDocument(vaticanIILumenGentium);
+    this.createDocument(vaticanIIDeiVerbum);
+    
+    this.createDocument(papalDiviniRedemptoris);
+    this.createDocument(papalHumanaeVitae);
+    
+    this.createDocument(saintAquinas);
+    this.createDocument(saintTeresa);
+    
+    this.createDocument(scriptureGospels);
+    this.createDocument(scripturePaulineLetters);
   }
 }
 

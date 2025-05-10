@@ -78,7 +78,27 @@ when appropriate.
           const truncatedContent = content.length > 1000 
             ? content.substring(0, 1000) + "..." 
             : content;
-          return `Document: ${doc.title}\nContent: ${truncatedContent}\nSource: ${doc.source}\n`;
+            
+          // Get document metadata for more specific citation information
+          const document = vectorStore.getDocumentById(doc.id);
+          let metadataStr = '';
+          
+          if (document?.metadata) {
+            // Format metadata differently based on document category
+            if (doc.category === 'Catechism') {
+              metadataStr = `\nSection: ${document.metadata.section || ''}\nParagraphs: ${document.metadata.paragraphs || ''}\nYear: ${document.metadata.year || ''}`;
+            } else if (doc.category === 'Council Documents') {
+              metadataStr = `\nDocument: ${document.metadata.document || ''}\nType: ${document.metadata.type || ''}\nYear: ${document.metadata.year || ''}`;
+            } else if (doc.category === 'Encyclicals') {
+              metadataStr = `\nPope: ${document.metadata.pope || ''}\nYear: ${document.metadata.year || ''}\nType: ${document.metadata.type || ''}`;
+            } else if (doc.category === 'Saints') {
+              metadataStr = `\nLifespan: ${document.metadata.lifespan || ''}\nFeast Day: ${document.metadata.feast || ''}\nTitle: ${document.metadata.title || ''}`;
+            } else if (doc.category === 'Scripture') {
+              metadataStr = `\nTestament: ${document.metadata.testament || ''}\nBooks: ${document.metadata.books || ''}\nType: ${document.metadata.type || ''}`;
+            }
+          }
+          
+          return `Document: ${doc.title}\nContent: ${truncatedContent}\nSource: ${doc.source}\nCategory: ${doc.category || ''}${metadataStr}\n`;
         })
         .join("\n");
       
