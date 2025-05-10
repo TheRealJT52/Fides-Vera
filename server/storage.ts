@@ -205,11 +205,12 @@ export class MemStorage implements IStorage {
 
   async createChat(insertChat: InsertChat): Promise<Chat> {
     const id = this.currentIds.chats++;
+    // Create a properly typed object
     const chat: Chat = { 
-      ...insertChat, 
       id, 
-      createdAt: new Date(),
-      userId: insertChat.userId || null
+      title: insertChat.title,
+      userId: insertChat.userId || null,
+      createdAt: new Date()
     };
     this.chats.set(id, chat);
     return chat;
@@ -251,9 +252,12 @@ export class MemStorage implements IStorage {
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = this.currentIds.messages++;
+    // Create a properly typed object
     const message: Message = { 
-      ...insertMessage, 
-      id, 
+      id,
+      chatId: insertMessage.chatId,
+      role: insertMessage.role,
+      content: insertMessage.content,
       createdAt: new Date(),
       sources: insertMessage.sources || null
     };
