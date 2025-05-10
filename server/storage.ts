@@ -1,10 +1,16 @@
 import { 
   User, InsertUser, 
-  Chat, InsertChat, 
-  Message, InsertMessage, 
-  Document, InsertDocument, 
   SourceReference
 } from "@shared/schema";
+
+import {
+  ExplicitChat as Chat,
+  ExplicitInsertChat as InsertChat,
+  ExplicitMessage as Message,
+  ExplicitInsertMessage as InsertMessage,
+  ExplicitDocument as Document,
+  ExplicitInsertDocument as InsertDocument
+} from "./types";
 
 export interface IStorage {
   // User methods
@@ -205,11 +211,17 @@ export class MemStorage implements IStorage {
 
   async createChat(insertChat: InsertChat): Promise<Chat> {
     const id = this.currentIds.chats++;
+    
+    // Type checking for required fields
+    if (typeof insertChat.title !== 'string') {
+      throw new Error('title is required and must be a string');
+    }
+    
     // Create a properly typed Chat object
     const chat: Chat = { 
       id, 
-      title: insertChat.title || "",
-      userId: insertChat.userId !== undefined ? insertChat.userId : null,
+      title: insertChat.title,
+      userId: (insertChat as any).userId !== undefined ? (insertChat as any).userId : null,
       createdAt: new Date()
     };
     this.chats.set(id, chat);
@@ -252,14 +264,26 @@ export class MemStorage implements IStorage {
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = this.currentIds.messages++;
-    // Create a properly typed object
+    
+    // Type checking for required fields
+    if (typeof insertMessage.chatId !== 'number') {
+      throw new Error('chatId is required and must be a number');
+    }
+    if (typeof insertMessage.role !== 'string') {
+      throw new Error('role is required and must be a string');
+    }
+    if (typeof insertMessage.content !== 'string') {
+      throw new Error('content is required and must be a string');
+    }
+
+    // Create a properly typed Message object
     const message: Message = { 
       id,
       chatId: insertMessage.chatId,
       role: insertMessage.role,
       content: insertMessage.content,
       createdAt: new Date(),
-      sources: insertMessage.sources || null
+      sources: insertMessage.sources ?? null
     };
     this.messages.set(id, message);
     return message;
@@ -282,10 +306,29 @@ export class MemStorage implements IStorage {
 
   async createDocument(insertDocument: InsertDocument): Promise<Document> {
     const id = this.currentIds.documents++;
+    
+    // Type checking for required fields
+    if (typeof insertDocument.title !== 'string') {
+      throw new Error('title is required and must be a string');
+    }
+    if (typeof insertDocument.content !== 'string') {
+      throw new Error('content is required and must be a string');
+    }
+    if (typeof insertDocument.source !== 'string') {
+      throw new Error('source is required and must be a string');
+    }
+    if (typeof insertDocument.category !== 'string') {
+      throw new Error('category is required and must be a string');
+    }
+    
+    // Create a properly typed Document object
     const document: Document = { 
-      ...insertDocument, 
       id,
-      metadata: insertDocument.metadata || null 
+      title: insertDocument.title,
+      content: insertDocument.content,
+      source: insertDocument.source,
+      category: insertDocument.category,
+      metadata: (insertDocument as any).metadata || null
     };
     this.documents.set(id, document);
     return document;
@@ -303,45 +346,45 @@ export class MemStorage implements IStorage {
 
   // Helper method to initialize documents
   private initializeDocuments() {
-    const catechismDocument: InsertDocument = {
+    const catechismDocument = {
       title: "Catechism of the Catholic Church",
       content: "The Catechism of the Catholic Church is a comprehensive summary of Catholic faith, morals, and doctrine. It serves as a reference text for teaching Catholic doctrine.",
       source: "Vatican",
       category: "Catechism",
       metadata: { year: 1992 }
-    };
+    } as InsertDocument;
     
-    const vaticanIIDocument: InsertDocument = {
+    const vaticanIIDocument = {
       title: "Vatican II Documents",
       content: "The Second Vatican Council (Vatican II) was an ecumenical council of the Catholic Church convened by Pope John XXIII and closed by Pope Paul VI. Its documents represent a major turning point in the modern Church.",
       source: "Vatican",
       category: "Council Documents",
       metadata: { year: "1962-1965" }
-    };
+    } as InsertDocument;
     
-    const papalEncyclicals: InsertDocument = {
+    const papalEncyclicals = {
       title: "Papal Encyclicals",
       content: "Papal encyclicals are letters addressed by the Pope to Catholic bishops throughout the world, typically concerning matters of Catholic doctrine and morals.",
       source: "Vatican",
       category: "Encyclicals",
       metadata: { type: "official teaching" }
-    };
+    } as InsertDocument;
     
-    const saintsLives: InsertDocument = {
+    const saintsLives = {
       title: "Lives of the Saints",
       content: "The lives of Catholic saints serve as models of Christian virtue and examples of faith in action.",
       source: "Catholic Tradition",
       category: "Saints",
       metadata: { type: "biographical" }
-    };
+    } as InsertDocument;
     
-    const scriptureReferences: InsertDocument = {
+    const scriptureReferences = {
       title: "Scripture References",
       content: "The Bible is foundational to Catholic teaching, and Scripture references help to ground Church teaching in the revealed Word of God.",
       source: "Holy Bible",
       category: "Scripture",
       metadata: { type: "sacred text" }
-    };
+    } as InsertDocument;
     
     this.createDocument(catechismDocument);
     this.createDocument(vaticanIIDocument);
