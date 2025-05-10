@@ -205,11 +205,11 @@ export class MemStorage implements IStorage {
 
   async createChat(insertChat: InsertChat): Promise<Chat> {
     const id = this.currentIds.chats++;
-    // Create a properly typed object
+    // Create a properly typed Chat object
     const chat: Chat = { 
       id, 
-      title: insertChat.title,
-      userId: insertChat.userId || null,
+      title: insertChat.title || "",
+      userId: insertChat.userId !== undefined ? insertChat.userId : null,
       createdAt: new Date()
     };
     this.chats.set(id, chat);
