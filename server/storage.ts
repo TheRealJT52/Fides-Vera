@@ -208,7 +208,8 @@ export class MemStorage implements IStorage {
     const chat: Chat = { 
       ...insertChat, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      userId: insertChat.userId || null
     };
     this.chats.set(id, chat);
     return chat;
@@ -253,7 +254,8 @@ export class MemStorage implements IStorage {
     const message: Message = { 
       ...insertMessage, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      sources: insertMessage.sources || null
     };
     this.messages.set(id, message);
     return message;
@@ -276,7 +278,11 @@ export class MemStorage implements IStorage {
 
   async createDocument(insertDocument: InsertDocument): Promise<Document> {
     const id = this.currentIds.documents++;
-    const document: Document = { ...insertDocument, id };
+    const document: Document = { 
+      ...insertDocument, 
+      id,
+      metadata: insertDocument.metadata || null 
+    };
     this.documents.set(id, document);
     return document;
   }
